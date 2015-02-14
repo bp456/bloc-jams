@@ -3,6 +3,10 @@
       var subText = $(this).text();
        $(this).text(subText + "!");
     });
+
+    $('div.hero-content h1').hover(function () {
+      $('div.hero-content h3').toggleClass('reddish');
+    });
  
    var onHoverAction = function(event) {
      console.log('Hover action triggered.');
