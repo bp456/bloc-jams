@@ -32,11 +32,13 @@ var albumMarconi = {
 var currentlyPlayingSong = null;
 
 var createSongRow = function(songNumber, songName, songLength) {
-  var template = '<tr>' +
-    '  <td class="song-number col-md-1" data-song-number="' + songNumber + '">' + songNumber + '</td>' +
-    '  <td class="col-md-9">' + songName + '</td>' +
-    '  <td class="col-md-2">' + songLength + '</td>' +
-    '</tr>';
+  var template = 
+  '<tr>' 
+   + '  <td class="song-number col-md-1" data-song-number="' + songNumber + '">' + songNumber + '</td>' 
+   + '  <td class="col-md-9">' + songName + '</td>' 
+   + '  <td class="col-md-2">' + songLength + '</td>' 
+   + '</tr>'
+   ;
 
   // Instead of returning the row immediately, we'll attach hover
   // functionality to it first.
@@ -58,9 +60,11 @@ var createSongRow = function(songNumber, songName, songLength) {
     }
   };
 
+ /*
+ this was the cause of all my problems....wtf!!!
   $row.hover(onHover, offHover);
   return $row;
-};
+};*/
 
 // Toggle the play, pause, and song number based on the button clicked.
 var clickHandler = function(event) {
@@ -82,6 +86,7 @@ var clickHandler = function(event) {
     $(this).html('<a class="album-song-button"><i class="fa fa-play"></i></a>');
     currentlyPlayingSong = null;
   }
+};
 
   $row.find('.song-number').click(clickHandler);
   $row.hover(onHover, offHover);
