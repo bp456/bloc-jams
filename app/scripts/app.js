@@ -13,23 +13,23 @@ var albumPicasso = {
 
     songs: [{
         name: 'Blue',
-        length: '4:26',
+        length: 163.38,
         audioUrl: '/music/placeholders/blue'
     }, {
         name: 'Green',
-        length: '3:14',
+        length: 105.66,
         audioUrl: '/music/placeholders/green'
     }, {
         name: 'Red',
-        length: '5:01',
+        length: 270.14,
         audioUrl: '/music/placeholders/red'
     }, {
         name: 'Pink',
-        length: '3:21',
+        length: 154.81,
         audioUrl: '/music/placeholders/pink'
     }, {
         name: 'Magenta',
-        length: '2:15',
+        length: 375.92,
         audioUrl: '/music/placeholders/magenta'
     }]
 };
@@ -166,6 +166,14 @@ blocJams.service('SongPlayer', function() {
             var song = this.currentAlbum.songs[currentTrackIndex];
             this.setSong(this.currentAlbum, song);
         },
+
+        seek: function(time) {
+            // Checks to make sure that a sound file is playing before seeking.
+            if (currentSoundFile) {
+                // Uses a Buzz method to set the time of the song.
+                currentSoundFile.setTime(time);
+            }
+        },
         setSong: function(album, song) {
             if (currentSoundFile) {
                 currentSoundFile.stop();
@@ -182,7 +190,7 @@ blocJams.service('SongPlayer', function() {
     };
 });
 
-blocJams.directive('slider', ['$document', function($document){
+blocJams.directive('slider', ['$document', function($document) {
 
     // Returns a number between 0 and 1 to determine where the mouse event happened along the slider bar.
     var calculateSliderPercentFromMouseEvent = function($slider, event) {
@@ -194,20 +202,56 @@ blocJams.directive('slider', ['$document', function($document){
         return offsetXPercent;
     };
 
+    var numberFromValue = function(value, defaultValue) {
+        if (typeof value === 'number') {
+            return value;
+        }
+
+        if (typeof value === 'undefined') {
+            return defaultValue;
+        }
+
+        if (typeof value === 'string') {
+            return Number(value);
+        }
+    };
+
+
     return {
         templateUrl: '/templates/directives/slider.html', //We'll create these files shortly.
         replace: true,
         restrict: 'E',
-        scope: {}, //creates a scope that exists only in this directive.
+        scope: {
+            onChange: '&'
+        },
         link: function(scope, element, attributes) {
             //These values represent the progress into the song/volume bar, and its max value.
             //For now, we're supplying arbitrary initial and max values.
+
+            var notifyCallback = function(newValue) {
+                if (typeof scope.onChange === 'function') {
+                    scope.onChange({
+                        value: newValue
+                    });
+                }
+            };
+
             scope.value = 0;
-            scope.max = 200;
+            scope.max = 100;
             var $seekBar = $(element);
 
+            attributes.$observe('value', function(newValue) {
+                scope.value = numberFromValue(newValue, 0);
+            });
+
+            attributes.$observe('max', function(newValue) {
+                scope.max = numberFromValue(newValue, 100) || 100;
+            });
+
             var percentString = function() {
-                var percent = Number(scope.value) / Number(scope.max) * 100;
+                var value = scope.value || 0;
+                var max = scope.max || 100;
+                percent = value / max * 100;
                 return percent + "%";
             };
 
@@ -226,6 +270,8 @@ blocJams.directive('slider', ['$document', function($document){
             scope.onClickSlider = function(event) {
                 var percent = calculateSliderPercentFromMouseEvent($seekBar, event);
                 scope.value = percent * scope.max;
+                  notifyCallback(scope.value);
+
             };
 
             scope.trackThumb = function() {
@@ -233,6 +279,8 @@ blocJams.directive('slider', ['$document', function($document){
                     var percent = calculateSliderPercentFromMouseEvent($seekBar, event);
                     scope.$apply(function() {
                         scope.value = percent * scope.max;
+                          notifyCallback(scope.value);
+
                     });
                 });
 
@@ -241,6 +289,7 @@ blocJams.directive('slider', ['$document', function($document){
                     $document.unbind('mousemove.thumb');
                     $document.unbind('mouseup.thumb');
                 });
+
             };
 
         }
